@@ -11,16 +11,6 @@ app.app_context().push()
 API = Api(app)
 
 
-@app.route("/")
-def trial_function():
-    return render_template('index.html')
-
-
-@app.route("/fetch")
-def read():
-    return render_template('view.html')
-
-
 API.add_resource(Generate, '/generate')
 API.add_resource(Templates, '/templates')
 

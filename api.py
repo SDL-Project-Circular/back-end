@@ -10,7 +10,6 @@ class Generate(Resource):
     def post(self):
         try:
             data = request.form.to_dict() or request.json
-            print(data)
             data_list = list(data.values())
             date_object = datetime.strptime(data_list[0], '%Y-%m-%d').date()
             temp = Template(template_name="harshita")
@@ -37,8 +36,8 @@ class Generate(Resource):
                 data = Content.query.filter_by(template_id=template_id).all()
             else:
                 data = Content.query.all()
-            print(data)
             if data:
+                print((data))
                 return jsonify(data)
         except:
             return {"status": "Failed"}
@@ -47,6 +46,5 @@ class Generate(Resource):
 class Templates(Resource):
     def get(self):
         data = Template.query.all()
-        print(data)
         if data:
             return jsonify(data)
