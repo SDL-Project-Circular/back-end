@@ -41,6 +41,8 @@ class Generate(Resource):
                 data = Content.query.all()
             if data:
                 return jsonify(data)
+            else:
+                return {"status": "no"}
         except:
             return {"status": "Failed"}, 500
 
