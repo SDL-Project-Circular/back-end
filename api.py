@@ -35,9 +35,10 @@ class Generate(Resource):
         try:
             template_id = request.args.get('id')
             if template_id:
-                data = Content.query.filter_by(template_id=template_id).all()
+                data = Content.query.filter_by(template_id=template_id).first()
             else:
                 data = Content.query.all()
+            print(data)
             if data:
                 return jsonify(data)
             else:
@@ -45,9 +46,25 @@ class Generate(Resource):
         except:
             return {"status": "Failed"}, 500
 
+    def delete(self):
+        try:
+            template_id = request.args.get('id')
+            if template_id:
+                data = Content.query.filter_by(template_id=template_id).first()
+                content = Template.query.filter_by(template_id=template_id).first()
+                db.session.delete(content)
+                db.session.commit()
+                db.session.delete(data)
+                db.session.commit()
+                return {"status": "success"}
+        except:
+            return {"status": "Failed"}
+
 
 class Templates(Resource):
     def get(self):
         data = Template.query.all()
         if data:
             return jsonify(data)
+        else:
+            return {"status": "no"}
