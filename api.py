@@ -2,7 +2,7 @@ import errno
 import sqlite3
 from datetime import datetime
 
-import sqlalchemy
+import sqlalchemy.exc
 from flask import request, jsonify, redirect
 from flask_restful import Resource
 from model import *
@@ -13,7 +13,6 @@ class Generate(Resource):
         try:
             data = request.form.to_dict() or request.json
             data_list = list(data.values())
-            print(data_list)
             date_object = datetime.strptime(data_list[0], '%Y-%m-%d').date()
             temp = Template(template_name=data_list[8])
             db.session.add(temp)
@@ -27,8 +26,9 @@ class Generate(Resource):
                 "status": "Success",
                 "id": temp.template_id
             }
+        except sqlalchemy.exc.IntegrityError:
+            db.session.rollback()
         except Exception as e:
-            print(e)
             return {"status": "Failed"}
 
     def get(self):
@@ -63,6 +63,13 @@ class Generate(Resource):
 
 class Templates(Resource):
     def get(self):
+        ref_name = request.args.get("ref_no")
+        if ref_name:
+            data = Content.query.filter_by(ref_no=ref_name).first()
+            if data:
+                return {"status": True}
+            else:
+                return {"status": False}
         data = Template.query.all()
         if data:
             return jsonify(data)
