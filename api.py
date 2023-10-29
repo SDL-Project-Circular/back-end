@@ -10,26 +10,30 @@ from model import *
 
 class Generate(Resource):
     def post(self):
+        data = request.form.to_dict() or request.json
+        data_list = list(data.values())
+        date_object = datetime.strptime(data_list[0], '%Y-%m-%d').date()
+        temp = Template(template_name=data_list[8])
         try:
-            data = request.form.to_dict() or request.json
-            data_list = list(data.values())
-            date_object = datetime.strptime(data_list[0], '%Y-%m-%d').date()
-            temp = Template(template_name=data_list[8])
             db.session.add(temp)
             db.session.commit()
+        except:
+            return {"status": "failed"}
+        try:
             data_object = Content(template_id=int(temp.template_id), ref_no=data_list[1], from_address=data_list[2],
                                   to_address=data_list[3], subject=data_list[4], body=data_list[5],
                                   sign_off=data_list[6], copy_to=data_list[7], date=date_object)
             db.session.add(data_object)
             db.session.commit()
             return {
-                "status": "Success",
+                "status": "success",
                 "id": temp.template_id
             }
         except sqlalchemy.exc.IntegrityError:
-            db.session.rollback()
+            return {"status": "failed"}
         except Exception as e:
-            return {"status": "Failed"}
+            print(e)
+            return {"status": "failed"}
 
     def get(self):
         try:
@@ -44,7 +48,7 @@ class Generate(Resource):
             else:
                 return {"status": "no"}
         except:
-            return {"status": "Failed"}, 500
+            return {"status": "failed"}, 500
 
     def delete(self):
         try:
@@ -58,7 +62,7 @@ class Generate(Resource):
                 db.session.commit()
                 return {"status": "success"}
         except:
-            return {"status": "Failed"}
+            return {"status": "failed"}
 
 
 class Templates(Resource):

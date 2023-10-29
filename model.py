@@ -17,11 +17,10 @@ class Content(db.Model):
     body: str = Column(String, nullable=False)
     sign_off: str = Column(String, nullable=False)
     copy_to: str = Column(String, nullable=False)
-    date: str = Column(Date, nullable=False)
+    date: date = Column(Date, nullable=False)
 
 
 @dataclass
 class Template(db.Model):
     template_id: int = Column(Integer, primary_key=True, autoincrement=True)
     template_name: str = Column(String, nullable=False)
-    templates = relationship("Content", backref="template")
