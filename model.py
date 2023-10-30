@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date
+from sqlalchemy import Column, Boolean , Integer, String, ForeignKey, Date
 from flask_sqlalchemy import SQLAlchemy
 from dataclasses import dataclass
 from datetime import date
@@ -18,6 +18,10 @@ class Content(db.Model):
     sign_off: str = Column(String, nullable=False)
     copy_to: str = Column(String, nullable=False)
     date: date = Column(Date, nullable=False)
+    occurence_date: bool = Column(Boolean, nullable=True, default=False, unique=False)
+    venue: bool = Column(Boolean, nullable=True, default=False, unique=False)
+    starting_time: bool = Column(Boolean, nullable=True, default=False, unique=False)
+    ending_time: bool = Column(Boolean, nullable=True, default=False, unique=False)
 
 
 @dataclass

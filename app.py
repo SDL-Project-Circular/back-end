@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from model import db, Content
+from model import db
 from flask_restful import Api
 from api import Generate, Templates
 
