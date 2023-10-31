@@ -9,10 +9,10 @@ from model import *
 class Generate(Resource):
     def post(self):
         data = request.form.to_dict() or request.json
-        data_list = list(data.values())
-        # print(data_list)
-        date_object = datetime.strptime(data_list[0], '%Y-%m-%d').date()
-        temp = Template(template_name=data_list[8])
+        # data_list = list(data.values())
+        print(data)
+        # date_object = datetime.strptime(data_list[0], '%Y-%m-%d').date()
+        temp = Template(template_name=data['template_name'])
         try:
             db.session.add(temp)
             db.session.commit()
@@ -20,11 +20,10 @@ class Generate(Resource):
             print(e)
             return {"status": "failed"}
         try:
-            data_object = Content(template_id=int(temp.template_id), ref_no=data_list[1], from_address=data_list[2],
-                                  to_address=data_list[3], subject=data_list[4], body=data_list[5],
-                                  sign_off=data_list[6], copy_to=data_list[7], date=date_object,
-                                  occurence_date=data_list[9]['occurence_date'], venue=data_list[9]['venue'],
-                                  starting_time=data_list[9]['starting_time'], ending_time=data_list[9]['ending_time'])
+            data_object = Content(template_id=int(temp.template_id), from_address=data['from'],
+                                  to_address=data['to'], subject=data['subject'], body=data['body'],
+                                  sign_off=data['sign_off'], copy_to=data['copy_to'], occurence_date=data['selectedOptions']['occurence_date'], venue=data['selectedOptions']['venue'],
+                                  starting_time=data['selectedOptions']['starting_time'], ending_time=data['selectedOptions']['ending_time'])
             db.session.add(data_object)
             db.session.commit()
             return {
@@ -83,3 +82,8 @@ class Templates(Resource):
             return jsonify(data)
         else:
             return {"status": "no"}
+
+
+class Circular(Resource):
+    def get(self):
+        pass
