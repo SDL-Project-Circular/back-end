@@ -31,7 +31,8 @@ class Template(db.Model):
 
 @dataclass
 class Circular(db.Model):
-    ref_no: str = Column(String, nullable=False, primary_key=True)
+    circular_id: int = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    ref_no: str = Column(String, ForeignKey("announcement.ref_no"), nullable=False)
     from_address: str = Column(String, nullable=False)
     to_address: str = Column(String, nullable=False)
     subject: str = Column(String, nullable=False)
@@ -39,8 +40,19 @@ class Circular(db.Model):
     sign_off: str = Column(String, nullable=False)
     copy_to: str = Column(String, nullable=False)
     date: date = Column(Date, nullable=False)
-    occurence_date: date = Column(Date, nullable=True, default=False, unique=False)
+    occurence_date: date = Column(Date, nullable=True, default=None, unique=False)
     venue: str = Column(String, nullable=True, default=False, unique=False)
-    starting_time: date = Column(Date, nullable=True, default=False, unique=False)
-    ending_time: date = Column(Date, nullable=True, default=False, unique=False)
+    starting_time: date = Column(Date, nullable=True, default=None, unique=False)
+    ending_time: date = Column(Date, nullable=True, default=None, unique=False)
 
+
+@dataclass
+class Announcement(db.Model):
+    ref_no: str = Column(String, primary_key=True, nullable=False)
+    circular_name: str = Column(String, nullable=False, unique=True)
+
+
+@dataclass
+class Users(db.Model):
+    staff_id: int = Column(Integer, primary_key=True, nullable=False)
+    password: str = Column(String, nullable=False)

@@ -73,13 +73,6 @@ class Generate(Resource):
 
 class Templates(Resource):
     def get(self):
-        ref_name = request.args.get("ref_no")
-        if ref_name:
-            data = Content.query.filter_by(ref_no=ref_name).first()
-            if data:
-                return {"status": True}
-            else:
-                return {"status": False}
         data = Template.query.all()
         if data:
             return jsonify(data)
@@ -87,21 +80,51 @@ class Templates(Resource):
             return {"status": "no"}
 
 
-class Circular(Resource):
+class Circulars(Resource):
     def get(self):
-        pass
+        ref_no = request.args.get("id")
+        if ref_no:
+            data = Circular.query.filter_by(ref_no=ref_no).first()
+            if data:
+                return jsonify(data)
+            else:
+                return {"status": "no"}
+        data = Announcement.query.all()
+        if data:
+            return jsonify(data)
+        else:
+            return {"status": "no"}
 
     def post(self):
         data = request.form.to_dict() or request.json
-        print(data)
+        date_object = datetime.strptime(data['date'], '%Y-%m-%d').date()
         try:
-            data_object = Circular(ref_no=data['ref_no'], from_address=data['from'], to_address=data['to'],
-                                   subject=data['subject'], body=data['body'], date=data['date'],
+            announcement = Announcement(ref_no=data['ref_no'], circular_name="Holiday")
+            db.session.add(announcement)
+            data_object = Circular(ref_no=data['ref_no'], from_address=data['from_address'], to_address=data['to_address'],
+                                   subject=data['subject'], body=data['body'], date=date_object,
                                    sign_off=data['sign_off'], copy_to=data['copy_to'],
                                    occurence_date=data['occurence_date'], venue=data['venue'],
                                    starting_time=data['starting_time'], ending_time=data['ending_time'])
-            print(data_object)
             db.session.add(data_object)
             db.session.commit()
+            return {
+                "status": "success",
+                "circular_id": data['ref_no']
+            }
         except Exception as e:
             print(e)
+            return {"status": "Failure"}
+
+
+class Login(Resource):
+    def post(self):
+        try:
+            data = request.form.to_dict() or request.json
+            query = Users.query.filter_by(staff_id=int(data["staff_id"]),password=data["password"]).first()
+            if query:
+                return {"status": "Success"}
+            else:
+                return {"status": "Invalid"}
+        except Exception as e:
+            return {"status": "Failure"}
