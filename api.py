@@ -22,8 +22,11 @@ class Generate(Resource):
         try:
             data_object = Content(template_id=int(temp.template_id), from_address=data['from'],
                                   to_address=data['to'], subject=data['subject'], body=data['body'],
-                                  sign_off=data['sign_off'], copy_to=data['copy_to'], occurence_date=data['selectedOptions']['occurence_date'], venue=data['selectedOptions']['venue'],
-                                  starting_time=data['selectedOptions']['starting_time'], ending_time=data['selectedOptions']['ending_time'])
+                                  sign_off=data['sign_off'], copy_to=data['copy_to'],
+                                  occurence_date=data['selectedOptions']['occurence_date'],
+                                  venue=data['selectedOptions']['venue'],
+                                  starting_time=data['selectedOptions']['starting_time'],
+                                  ending_time=data['selectedOptions']['ending_time'])
             db.session.add(data_object)
             db.session.commit()
             return {
@@ -87,3 +90,18 @@ class Templates(Resource):
 class Circular(Resource):
     def get(self):
         pass
+
+    def post(self):
+        data = request.form.to_dict() or request.json
+        print(data)
+        try:
+            data_object = Circular(ref_no=data['ref_no'], from_address=data['from'], to_address=data['to'],
+                                   subject=data['subject'], body=data['body'], date=data['date'],
+                                   sign_off=data['sign_off'], copy_to=data['copy_to'],
+                                   occurence_date=data['occurence_date'], venue=data['venue'],
+                                   starting_time=data['starting_time'], ending_time=data['ending_time'])
+            print(data_object)
+            db.session.add(data_object)
+            db.session.commit()
+        except Exception as e:
+            print(e)

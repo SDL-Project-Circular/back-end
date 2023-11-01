@@ -31,7 +31,6 @@ class Template(db.Model):
 
 @dataclass
 class Circular(db.Model):
-    template_id: int = Column(Integer, ForeignKey("template.template_id"), nullable=False)
     ref_no: str = Column(String, nullable=False, primary_key=True)
     from_address: str = Column(String, nullable=False)
     to_address: str = Column(String, nullable=False)
