@@ -99,7 +99,7 @@ class Circulars(Resource):
         data = request.form.to_dict() or request.json
         date_object = datetime.strptime(data['date'], '%Y-%m-%d').date()
         try:
-            announcement = Announcement(ref_no=data['ref_no'], circular_name="Holiday")
+            announcement = Announcement(ref_no=data['ref_no'], circular_name=data['circular_name'])
             db.session.add(announcement)
             data_object = Circular(ref_no=data['ref_no'], from_address=data['from_address'], to_address=data['to_address'],
                                    subject=data['subject'], body=data['body'], date=date_object,
