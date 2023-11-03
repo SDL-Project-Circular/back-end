@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import Column, Boolean, Integer, String, ForeignKey, Date, DateTime
+from sqlalchemy import Column, Boolean, Integer, String, ForeignKey, Date, DateTime, Time
 from flask_sqlalchemy import SQLAlchemy
 from dataclasses import dataclass
 from datetime import date
@@ -33,20 +33,36 @@ class Template(db.Model):
 
 @dataclass
 class Circular(db.Model):
-    circular_id: int = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
-    ref_no: str = Column(String, ForeignKey("announcement.ref_no"), nullable=False)
-    from_address: str = Column(String, nullable=False)
-    to_address: str = Column(String, nullable=False)
-    subject: str = Column(String, nullable=False)
-    body: str = Column(String, nullable=False)
-    sign_off: str = Column(String, nullable=False)
-    copy_to: str = Column(String, nullable=False)
-    date: date = Column(Date, nullable=False)
-    occurence_date: date = Column(Date, nullable=True, default=None, unique=False)
-    venue: str = Column(String, nullable=True, default=False, unique=False)
-    starting_time: date = Column(Date, nullable=True, default=None, unique=False)
-    ending_time: date = Column(Date, nullable=True, default=None, unique=False)
+    circular_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    ref_no = Column(String, ForeignKey("announcement.ref_no"), nullable=False)
+    from_address = Column(String, nullable=False)
+    to_address = Column(String, nullable=False)
+    subject = Column(String, nullable=False)
+    body = Column(String, nullable=False)
+    sign_off = Column(String, nullable=False)
+    copy_to = Column(String, nullable=False)
+    date = Column(Date, nullable=False)
+    occurence_date = Column(Date, nullable=True, default=None, unique=False)
+    venue = Column(String, nullable=True, default=None, unique=False)
+    starting_time = Column(Time, nullable=True, default=None, unique=False)
+    ending_time = Column(Time, nullable=True, default=None, unique=False)
 
+    def to_dict(self):
+        return {
+            "circular_id": self.circular_id,
+            "ref_no": self.ref_no,
+            "from_address": self.from_address,
+            "to_address": self.to_address,
+            "subject": self.subject,
+            "body": self.body,
+            "sign_off": self.sign_off,
+            "copy_to": self.copy_to,
+            "date": self.date.isoformat(),
+            "occurence_date": self.occurence_date.isoformat() if self.occurence_date else None,
+            "venue": self.venue,
+            "starting_time": self.starting_time.strftime("%H:%M") if self.starting_time else None,
+            "ending_time": self.ending_time.strftime("%H:%M") if self.ending_time else None
+        }
 
 @dataclass
 class Announcement(db.Model):
