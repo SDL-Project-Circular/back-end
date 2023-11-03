@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Boolean, Integer, String, ForeignKey, Date
+import datetime
+
+from sqlalchemy import Column, Boolean, Integer, String, ForeignKey, Date, DateTime
 from flask_sqlalchemy import SQLAlchemy
 from dataclasses import dataclass
 from datetime import date
@@ -50,6 +52,7 @@ class Circular(db.Model):
 class Announcement(db.Model):
     ref_no: str = Column(String, primary_key=True, nullable=False)
     circular_name: str = Column(String, nullable=False, unique=True)
+    date: date = Column(Date, default=datetime.date.today())
 
 
 @dataclass
