@@ -22,7 +22,7 @@ class Generate(Resource):
             data_object = Content(template_id=int(temp.template_id), from_address=data['from'],
                                   to_address=data['to'], subject=data['subject'], body=data['body'],
                                   sign_off=data['sign_off'], copy_to=data['copy_to'],
-                                  occurence_date=data['selectedOptions']['occurence_date'],
+                                  occurrence_date=data['selectedOptions']['occurrence_date'],
                                   venue=data['selectedOptions']['venue'],
                                   starting_time=data['selectedOptions']['starting_time'],
                                   ending_time=data['selectedOptions']['ending_time'])
@@ -99,6 +99,7 @@ class Circulars(Resource):
         data = request.form.to_dict() or request.json
         date_format = "%Y-%m-%d"
         time_format = "%H:%M"
+        print(data)
         try:
             announcement = Announcement(ref_no=data['ref_no'], circular_name=data['circular_name'])
             db.session.add(announcement)
@@ -106,7 +107,7 @@ class Circulars(Resource):
                                subject=data['subject'], body=data['body'],
                                date=dt.strptime(data['date'], date_format),
                                sign_off=data['sign_off'], copy_to=data['copy_to'],
-                               occurence_date=dt.strptime(data['occurrence_date'], date_format).date() if data['occurrence_date'] else None,
+                               occurrence_date=dt.strptime(data['occurrence_date'], date_format).date() if data['occurrence_date'] else None,
                                venue=data['venue'],
                                starting_time=dt.strptime(data['starting_time'], time_format).time() if data['starting_time'] else None,
                                ending_time=dt.strptime(data['ending_time'], time_format).time() if data['ending_time'] else None)

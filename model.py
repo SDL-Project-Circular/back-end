@@ -19,7 +19,7 @@ class Content(db.Model):
     body: str = Column(String, nullable=False)
     sign_off: str = Column(String, nullable=False)
     copy_to: str = Column(String, nullable=False)
-    occurence_date: bool = Column(Boolean, nullable=True, default=False, unique=False)
+    occurrence_date: bool = Column(Boolean, nullable=True, default=False, unique=False)
     venue: bool = Column(Boolean, nullable=True, default=False, unique=False)
     starting_time: bool = Column(Boolean, nullable=True, default=False, unique=False)
     ending_time: bool = Column(Boolean, nullable=True, default=False, unique=False)
@@ -29,6 +29,7 @@ class Content(db.Model):
 class Template(db.Model):
     template_id: int = Column(Integer, primary_key=True, autoincrement=True)
     template_name: str = Column(String, nullable=False)
+    date: date = Column(Date, default=datetime.date.today())
 
 
 @dataclass
@@ -42,7 +43,7 @@ class Circular(db.Model):
     sign_off = Column(String, nullable=False)
     copy_to = Column(String, nullable=False)
     date = Column(Date, nullable=False)
-    occurence_date = Column(Date, nullable=True, default=None, unique=False)
+    occurrence_date = Column(Date, nullable=True, default=None, unique=False)
     venue = Column(String, nullable=True, default=None, unique=False)
     starting_time = Column(Time, nullable=True, default=None, unique=False)
     ending_time = Column(Time, nullable=True, default=None, unique=False)
@@ -58,11 +59,12 @@ class Circular(db.Model):
             "sign_off": self.sign_off,
             "copy_to": self.copy_to,
             "date": self.date.isoformat(),
-            "occurence_date": self.occurence_date.isoformat() if self.occurence_date else None,
+            "occurrence_date": self.occurrence_date.isoformat() if self.occurrence_date else None,
             "venue": self.venue,
             "starting_time": self.starting_time.strftime("%H:%M") if self.starting_time else None,
             "ending_time": self.ending_time.strftime("%H:%M") if self.ending_time else None
         }
+
 
 @dataclass
 class Announcement(db.Model):
