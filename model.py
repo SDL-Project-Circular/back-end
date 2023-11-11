@@ -1,10 +1,10 @@
 import datetime
-
+from flask_security import UserMixin, RoleMixin
 from sqlalchemy import Column, Boolean, Integer, String, ForeignKey, Date, DateTime, Time
 from flask_sqlalchemy import SQLAlchemy
 from dataclasses import dataclass
 from datetime import date
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 db = SQLAlchemy()
 
@@ -73,7 +73,25 @@ class Announcement(db.Model):
     date: date = Column(Date, default=datetime.date.today())
 
 
-@dataclass
-class Users(db.Model):
-    staff_id: int = Column(Integer, primary_key=True, nullable=False)
-    password: str = Column(String, nullable=False)
+# @dataclass
+# class Users(db.Model, UserMixin):
+#     staff_id: int = Column(Integer, primary_key=True, nullable=False)
+#     password: str = Column(String, nullable=False)
+#     active: bool = Column(Boolean)
+#     fs_uniquifier: str = Column(String, unique=True, nullable=False)
+#     roles = db.relationship('Role', secondary="rolesusers", backref=db.backref("Users", lazy="dynamic"))
+#
+#
+# @dataclass
+# class Role(db.Model, RoleMixin):
+#     id: int = Column(Integer, primary_key=True)
+#     name: str = Column(String, nullable=False, unique=True)
+#     description: str = Column(String)
+#
+#
+# @dataclass
+# class RolesUsers(db.Model):
+#     id: int = Column(Integer, primary_key=True)
+#     user_id: int = Column(Integer, ForeignKey('users', 'staff_id'))
+#     role_id: int = Column(Integer, ForeignKey('role', 'id'))
+#

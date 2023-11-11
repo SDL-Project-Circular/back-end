@@ -1,13 +1,19 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from model import db
+from flask_security import Security, SQLAlchemyUserDatastore
+from model import db, Users, Role
 from flask_restful import Api
 from api import Generate, Templates, Circulars, Login
+from configure import DevelopmentConfig
+
 # from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///database.sqlite3'
+app.config.from_object(DevelopmentConfig)
 db.init_app(app)
+datastore = SQLAlchemyUserDatastore(db, Users, Role)
+app.security = Security(app,datastore)
 app.app_context().push()
 API = Api(app)
 
