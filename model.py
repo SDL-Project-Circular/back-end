@@ -72,6 +72,7 @@ class Announcement(db.Model):
     circular_name: str = Column(String, nullable=False, unique=True)
     date: date = Column(Date, default=datetime.date.today())
 
+
 #
 # @dataclass
 # class Users(db.Model, UserMixin):
@@ -106,7 +107,7 @@ class RolesUsers(db.Model):
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, unique=False)
-    email = db.Column(db.String, unique=True)
+    email = db.Column(db.String(255), unique=True, index=True)
     password = db.Column(db.String(255))
     active = db.Column(db.Boolean())
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)

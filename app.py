@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore
-from model import db, Users, Role
+from model import db, User, Role
 from flask_restful import Api
 from api import Generate, Templates, Circulars, Login
 from configure import DevelopmentConfig
@@ -12,8 +12,8 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///database.sqlite3'
 app.config.from_object(DevelopmentConfig)
 db.init_app(app)
-datastore = SQLAlchemyUserDatastore(db, Users, Role)
-app.security = Security(app,datastore)
+datastore = SQLAlchemyUserDatastore(db, User, Role)
+app.security = Security(app, datastore)
 app.app_context().push()
 API = Api(app)
 
