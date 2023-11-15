@@ -47,7 +47,6 @@ class Circular(db.Model):
     venue = Column(String, nullable=True, default=None, unique=False)
     starting_time = Column(Time, nullable=True, default=None, unique=False)
     ending_time = Column(Time, nullable=True, default=None, unique=False)
-
     def to_dict(self):
         return {
             "circular_id": self.circular_id,
@@ -71,52 +70,35 @@ class Announcement(db.Model):
     ref_no: str = Column(String, primary_key=True, nullable=False)
     circular_name: str = Column(String, nullable=False, unique=True)
     date: date = Column(Date, default=datetime.date.today())
+    approved: bool = Column(Boolean, default=False, nullable=False)
+    status: str = Column(String, default="Pending", nullable=False)
 
 
-#
-# @dataclass
-# class Users(db.Model, UserMixin):
-#     staff_id: int = Column(Integer, primary_key=True, nullable=False)
-#     password: str = Column(String, nullable=False)
-#     active: bool = Column(Boolean)
-#     fs_uniquifier: str = Column(String, unique=True, nullable=False)
-#     roles = db.relationship('Role', secondary="rolesusers", backref=db.backref("Users", lazy="dynamic"))
-#
-#
-# @dataclass
-# class Role(db.Model, RoleMixin):
-#     id: int = Column(Integer, primary_key=True)
-#     name: str = Column(String, nullable=False, unique=True)
-#     description: str = Column(String)
-#
-#
-# @dataclass
-# class RolesUsers(db.Model):
-#     id: int = Column(Integer, primary_key=True)
-#     user_id: int = Column(Integer, ForeignKey('users', 'staff_id'))
-#     role_id: int = Column(Integer, ForeignKey('role', 'id'))
-
-
+@dataclass
 class RolesUsers(db.Model):
     __tablename__ = 'roles_users'
-    id = db.Column(db.Integer(), primary_key=True)
-    user_id = db.Column('user_id', db.Integer(), db.ForeignKey('user.id'))
-    role_id = db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
+    id: int = db.Column(db.Integer(), primary_key=True)
+    user_id: int = db.Column('user_id', db.Integer(), db.ForeignKey('user.id'))
+    role_id: int = db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
 
 
+@dataclass
+class Role(db.Model, RoleMixin):
+    id: int = db.Column(db.Integer(), primary_key=True)
+    name: str = db.Column(db.String(80), unique=True)
+    description: str = db.Column(db.String(255))
+
+
+@dataclass
 class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, unique=False)
-    email = db.Column(db.String(255), unique=True, index=True)
-    password = db.Column(db.String(255))
-    active = db.Column(db.Boolean())
-    fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
-    roles = db.relationship('Role', secondary='roles_users',
+    __allow_unmapped__ = True
+    id: int = db.Column(db.Integer, primary_key=True)
+    username: str = db.Column(db.String, unique=False)
+    email: str = db.Column(db.String(255), unique=True, index=True)
+    password: str = db.Column(db.String(255))
+    active: bool = db.Column(db.Boolean())
+    fs_uniquifier: str = db.Column(db.String(255), unique=True, nullable=False)
+    roles: list[Role] = db.relationship('Role', secondary='roles_users',
                             backref=db.backref('users', lazy='dynamic'))
     # study_resource = db.relationship('StudyResource', backref='creator')
 
-
-class Role(db.Model, RoleMixin):
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    description = db.Column(db.String(255))

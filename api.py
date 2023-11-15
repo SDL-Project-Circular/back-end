@@ -10,6 +10,8 @@ from model import *
 
 
 class Generate(Resource):
+    # @auth_required("token")
+    # @roles_accepted("admin")
     def post(self):
         data = request.form.to_dict() or request.json
         print(data)
@@ -41,6 +43,8 @@ class Generate(Resource):
             print(e)
             return {"status": "failed"}
 
+    # @auth_required("token")
+    # @roles_accepted("admin")
     def get(self):
         try:
             template_id = request.args.get('id')
@@ -56,6 +60,8 @@ class Generate(Resource):
             print(e)
             return {"status": "failed"}, 500
 
+    # @auth_required("token")
+    # @roles_accepted("admin")
     def delete(self):
         try:
             template_id = request.args.get('id')
@@ -73,6 +79,8 @@ class Generate(Resource):
 
 
 class Templates(Resource):
+    # @auth_required("token")
+    # @roles_accepted("admin")
     def get(self):
         data = Template.query.all()
         if data:
@@ -82,8 +90,7 @@ class Templates(Resource):
 
 
 class Circulars(Resource):
-    @auth_required("token")
-    @roles_accepted("admin")
+    # @auth_required("token")
     def get(self):
         ref_no = request.args.get("id")
         if ref_no:
@@ -98,7 +105,10 @@ class Circulars(Resource):
             return jsonify(data)
         else:
             return {"status": "no"}
-
+        
+        
+    # @auth_required("token")
+    # @roles_accepted("admin")
     def post(self):
         data = request.form.to_dict() or request.json
         date_format = "%Y-%m-%d"
@@ -125,6 +135,8 @@ class Circulars(Resource):
             print(e)
             return {"status": "Failure"}
         
+    # @auth_required("token")
+    # @roles_accepted("admin")    
     def delete(self):
         try:
             ref_no = request.args.get('ref_no')
