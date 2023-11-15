@@ -7,7 +7,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
     SQL_ALCHEMY_DATABASE_URI = "sqlite:///database.sqlite3"
     SECRET_KEY = "thisisasecret"
-    SECURITY_PASSWORD_SALT = "thisisasalt"
+    SECURITY_PASSWORD_SALT = "isasalt"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = False
     SECURITY_TOKEN_AUTHENTICATION_HEADER = "Authentication-Token"

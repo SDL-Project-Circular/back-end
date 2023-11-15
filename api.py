@@ -2,8 +2,9 @@ from datetime import datetime as dt
 import json
 import sqlalchemy.exc
 from flask import request, jsonify
+from flask_login import login_required
 from flask_restful import Resource
-from flask_security import auth_required
+from flask_security import auth_required, roles_accepted
 
 from model import *
 
@@ -81,7 +82,8 @@ class Templates(Resource):
 
 
 class Circulars(Resource):
-    # @auth_required("token")
+    @auth_required("token")
+    @roles_accepted("admin")
     def get(self):
         ref_no = request.args.get("id")
         if ref_no:
