@@ -5,7 +5,6 @@ from flask import request, jsonify
 from flask_login import login_required
 from flask_restful import Resource
 from flask_security import auth_required, roles_accepted
-
 from model import *
 
 
@@ -90,7 +89,7 @@ class Templates(Resource):
 
 
 class Circulars(Resource):
-    # @auth_required("token")
+    @auth_required("token")
     def get(self):
         ref_no = request.args.get("id")
         if ref_no:
@@ -151,16 +150,32 @@ class Circulars(Resource):
         except Exception as e:
             print(e)
             return {"status": "failed"}
-
-
-class Login(Resource):
-    def post(self):
+        
+    def patch(self):
         try:
-            data = request.form.to_dict() or request.json
-            query = User.query.filter_by(staff_id=int(data["staff_id"]),password=data["password"]).first()
-            if query:
-                return {"status": "Success"}
-            else:
-                return {"status": "Invalid"}
+            ref_no = request.args.get("ref_no")
+            id=request.args.get("id")
+            if ref_no:
+                data= request.form.to_dict() or request.json
+                content= Announcement.query.filter_by(ref_no=ref_no).first()
+                content.circular_name= data["circular_name"]
+                circular_data=Circular.query.filter_by(ref_no=ref_no).first()
+                circular_data.venue=data["venue"]
+                circular_data.occurence_date=data["occurrence_date"]
+                circular_data.ending_time=data["ending_time"]
+                circular_data.starting_time=data["starting_time"]
+                content.status="Pending"
+                db.session.add(circular_data)
+            elif id:
+                content= Announcement.query.filter_by(ref_no=id).first()
+                content.approved=True
+            db.session.add(content)
+            db.session.commit()
+            return {
+                "status": "success",
+                "circular_id": data['ref_no']
+            }
+
         except Exception as e:
-            return {"status": "Failure"}
+            print(e)
+            return {"status" : "failed"}

@@ -1,10 +1,11 @@
-from flask import Flask
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore
 from model import db, User, Role
 from flask_restful import Api
-from api import Generate, Templates, Circulars, Login
+from api import Generate, Templates, Circulars
 from configure import DevelopmentConfig
+from flask_cors import CORS
 
 # from flask_bcrypt import Bcrypt
 
@@ -16,6 +17,7 @@ datastore = SQLAlchemyUserDatastore(db, User, Role)
 app.security = Security(app, datastore)
 app.app_context().push()
 API = Api(app)
+CORS(app)
 
 # ------------------------------------------------------------
 # DO NOT DELETE - HARSHITA
@@ -33,7 +35,17 @@ API = Api(app)
 API.add_resource(Generate, '/generate')
 API.add_resource(Templates, '/templates')
 API.add_resource(Circulars, '/circular')
-API.add_resource(Login, '/login')
+
+
+@app.post('/login-user')
+def login():
+    data = request.form.to_dict() or request.json
+    user = datastore.find_user(email=data['email'])
+    if not user:
+        return jsonify({"error": "No user found"})
+    if user.password == data['password']:
+        return jsonify({"message": "Success", "token": user.get_auth_token(), "role": user.roles[0].name})
+    return jsonify({"error": "Incorrect password!"})
 
 if __name__ == '__main__':
     app.run(debug=True)
