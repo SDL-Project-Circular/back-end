@@ -9,11 +9,10 @@ from model import *
 
 
 class Generate(Resource):
-    # @auth_required("token")
-    # @roles_accepted("admin")
+    @auth_required("token")
+    @roles_accepted("admin")
     def post(self):
         data = request.form.to_dict() or request.json
-        print(data)
         temp = Template(template_name=data['template_name'])
         try:
             db.session.add(temp)
@@ -42,8 +41,8 @@ class Generate(Resource):
             print(e)
             return {"status": "failed"}
 
-    # @auth_required("token")
-    # @roles_accepted("admin")
+    @auth_required("token")
+    @roles_accepted("admin")
     def get(self):
         try:
             template_id = request.args.get('id')
@@ -59,8 +58,8 @@ class Generate(Resource):
             print(e)
             return {"status": "failed"}, 500
 
-    # @auth_required("token")
-    # @roles_accepted("admin")
+    @auth_required("token")
+    @roles_accepted("admin")
     def delete(self):
         try:
             template_id = request.args.get('id')
@@ -78,8 +77,8 @@ class Generate(Resource):
 
 
 class Templates(Resource):
-    # @auth_required("token")
-    # @roles_accepted("admin")
+    @auth_required("token")
+    @roles_accepted("admin")
     def get(self):
         data = Template.query.all()
         if data:
@@ -89,7 +88,7 @@ class Templates(Resource):
 
 
 class Circulars(Resource):
-    # @auth_required("token")
+    @auth_required("token")
     def get(self):
         ref_no = request.args.get("id")
         if ref_no:
@@ -105,8 +104,8 @@ class Circulars(Resource):
         else:
             return {"status": "no"}
 
-    # @auth_required("token")
-    # @roles_accepted("admin")
+    @auth_required("token")
+    @roles_accepted("admin")
     def post(self):
         data = request.form.to_dict() or request.json
         date_format = "%Y-%m-%d"
@@ -137,8 +136,8 @@ class Circulars(Resource):
             print(e)
             return {"status": "Failure"}
 
-    # @auth_required("token")
-    # @roles_accepted("admin")    
+    @auth_required("token")
+    @roles_accepted("admin", "HOD")
     def delete(self):
         try:
             ref_no = request.args.get('ref_no')
@@ -154,6 +153,8 @@ class Circulars(Resource):
             print(e)
             return {"status": "failed"}
 
+    @auth_required("token")
+    @roles_accepted("admin")
     def patch(self):
         try:
             ref_no = request.args.get("ref_no")
@@ -176,7 +177,7 @@ class Circulars(Resource):
             db.session.commit()
             return {
                 "status": "success",
-                "circular_id": data['ref_no']
+                "circular_id": ref_no
             }
 
         except Exception as e:
@@ -185,6 +186,8 @@ class Circulars(Resource):
 
 
 class HOD(Resource):
+    @auth_required("token")
+    @roles_accepted("HOD")
     def patch(self):
         ref_no = request.args.get('ref_no')
         id = request.args.get('id')
