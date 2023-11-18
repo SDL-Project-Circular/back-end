@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_security import Security, SQLAlchemyUserDatastore
 from model import db, User, Role
 from flask_restful import Api
-from api import Generate, Templates, Circulars
+from api import Generate, Templates, Circulars, HOD
 from configure import DevelopmentConfig
 from flask_cors import CORS
 
@@ -35,6 +35,7 @@ CORS(app)
 API.add_resource(Generate, '/generate')
 API.add_resource(Templates, '/templates')
 API.add_resource(Circulars, '/circular')
+API.add_resource(HOD, '/approval')
 
 
 @app.post('/login-user')
@@ -46,6 +47,7 @@ def login():
     if user.password == data['password']:
         return jsonify({"message": "Success", "token": user.get_auth_token(), "role": user.roles[0].name})
     return jsonify({"error": "Incorrect password!"})
+
 
 if __name__ == '__main__':
     app.run(debug=True)

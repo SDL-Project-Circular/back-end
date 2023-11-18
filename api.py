@@ -89,7 +89,7 @@ class Templates(Resource):
 
 
 class Circulars(Resource):
-    @auth_required("token")
+    # @auth_required("token")
     def get(self):
         ref_no = request.args.get("id")
         if ref_no:
@@ -104,8 +104,7 @@ class Circulars(Resource):
             return jsonify(data)
         else:
             return {"status": "no"}
-        
-        
+
     # @auth_required("token")
     # @roles_accepted("admin")
     def post(self):
@@ -116,14 +115,18 @@ class Circulars(Resource):
         try:
             announcement = Announcement(ref_no=data['ref_no'], circular_name=data['circular_name'])
             db.session.add(announcement)
-            data_object = Circular(ref_no=data['ref_no'], from_address=data['from_address'], to_address=data['to_address'],
-                               subject=data['subject'], body=data['body'],
-                               date=dt.strptime(data['date'], date_format),
-                               sign_off=data['sign_off'], copy_to=data['copy_to'],
-                               occurrence_date=dt.strptime(data['occurrence_date'], date_format).date() if data['occurrence_date'] else None,
-                               venue=data['venue'],
-                               starting_time=dt.strptime(data['starting_time'], time_format).time() if data['starting_time'] else None,
-                               ending_time=dt.strptime(data['ending_time'], time_format).time() if data['ending_time'] else None)
+            data_object = Circular(ref_no=data['ref_no'], from_address=data['from_address'],
+                                   to_address=data['to_address'],
+                                   subject=data['subject'], body=data['body'],
+                                   date=dt.strptime(data['date'], date_format),
+                                   sign_off=data['sign_off'], copy_to=data['copy_to'],
+                                   occurrence_date=dt.strptime(data['occurrence_date'], date_format).date() if data[
+                                       'occurrence_date'] else None,
+                                   venue=data['venue'],
+                                   starting_time=dt.strptime(data['starting_time'], time_format).time() if data[
+                                       'starting_time'] else None,
+                                   ending_time=dt.strptime(data['ending_time'], time_format).time() if data[
+                                       'ending_time'] else None)
             db.session.add(data_object)
             db.session.commit()
             return {
@@ -133,7 +136,7 @@ class Circulars(Resource):
         except Exception as e:
             print(e)
             return {"status": "Failure"}
-        
+
     # @auth_required("token")
     # @roles_accepted("admin")    
     def delete(self):
@@ -150,25 +153,25 @@ class Circulars(Resource):
         except Exception as e:
             print(e)
             return {"status": "failed"}
-        
+
     def patch(self):
         try:
             ref_no = request.args.get("ref_no")
-            id=request.args.get("id")
+            id = request.args.get("id")
             if ref_no:
-                data= request.form.to_dict() or request.json
-                content= Announcement.query.filter_by(ref_no=ref_no).first()
-                content.circular_name= data["circular_name"]
-                circular_data=Circular.query.filter_by(ref_no=ref_no).first()
-                circular_data.venue=data["venue"]
-                circular_data.occurence_date=data["occurrence_date"]
-                circular_data.ending_time=data["ending_time"]
-                circular_data.starting_time=data["starting_time"]
-                content.status="Pending"
+                data = request.form.to_dict() or request.json
+                content = Announcement.query.filter_by(ref_no=ref_no).first()
+                content.circular_name = data["circular_name"]
+                circular_data = Circular.query.filter_by(ref_no=ref_no).first()
+                circular_data.venue = data["venue"]
+                circular_data.occurence_date = data["occurrence_date"]
+                circular_data.ending_time = data["ending_time"]
+                circular_data.starting_time = data["starting_time"]
+                content.status = "Pending"
                 db.session.add(circular_data)
             elif id:
-                content= Announcement.query.filter_by(ref_no=id).first()
-                content.approved=True
+                content = Announcement.query.filter_by(ref_no=id).first()
+                content.approved = True
             db.session.add(content)
             db.session.commit()
             return {
@@ -178,4 +181,18 @@ class Circulars(Resource):
 
         except Exception as e:
             print(e)
-            return {"status" : "failed"}
+            return {"status": "failed"}
+
+
+class HOD(Resource):
+    def patch(self):
+        ref_no = request.args.get('ref_no')
+        id = request.args.get('id')
+        if ref_no:
+            data = Announcement.query.filter_by(ref_no=ref_no).first()
+            data.status = "Rejected"
+        else:
+            data = Announcement.query.filter_by(ref_no=id).first()
+            data.status = "Accepted"
+        db.session.add(data)
+        db.session.commit()
