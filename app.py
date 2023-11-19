@@ -10,7 +10,6 @@ from flask_cors import CORS
 # from flask_bcrypt import Bcrypt
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///database.sqlite3'
 app.config.from_object(DevelopmentConfig)
 db.init_app(app)
 datastore = SQLAlchemyUserDatastore(db, User, Role)

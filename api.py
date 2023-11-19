@@ -18,7 +18,6 @@ class Generate(Resource):
             db.session.add(temp)
             db.session.commit()
         except Exception as e:
-            print(e)
             return {"status": "failed"}
         try:
             data_object = Content(template_id=int(temp.template_id), from_address=data['from'],
@@ -38,7 +37,6 @@ class Generate(Resource):
             db.session.rollback()
             return {"status": "failed"}
         except Exception as e:
-            print(e)
             return {"status": "failed"}
 
     @auth_required("token")
@@ -55,7 +53,6 @@ class Generate(Resource):
             else:
                 return {"status": "no"}
         except Exception as e:
-            print(e)
             return {"status": "failed"}, 500
 
     @auth_required("token")
@@ -72,7 +69,6 @@ class Generate(Resource):
                 db.session.commit()
                 return {"status": "success"}
         except Exception as e:
-            print(e)
             return {"status": "failed"}
 
 
@@ -89,6 +85,7 @@ class Templates(Resource):
 
 class Circulars(Resource):
     @auth_required("token")
+    @roles_accepted("admin", "HOD")
     def get(self):
         ref_no = request.args.get("id")
         if ref_no:
@@ -110,7 +107,6 @@ class Circulars(Resource):
         data = request.form.to_dict() or request.json
         date_format = "%Y-%m-%d"
         time_format = "%H:%M"
-        print(data)
         try:
             announcement = Announcement(ref_no=data['ref_no'], circular_name=data['circular_name'])
             db.session.add(announcement)
@@ -133,7 +129,6 @@ class Circulars(Resource):
                 "circular_id": data['ref_no']
             }
         except Exception as e:
-            print(e)
             return {"status": "Failure"}
 
     @auth_required("token")
@@ -150,7 +145,6 @@ class Circulars(Resource):
                 db.session.commit()
                 return {"status": "success"}
         except Exception as e:
-            print(e)
             return {"status": "failed"}
 
     @auth_required("token")
@@ -181,7 +175,6 @@ class Circulars(Resource):
             }
 
         except Exception as e:
-            print(e)
             return {"status": "failed"}
 
 

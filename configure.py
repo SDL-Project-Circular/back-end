@@ -5,9 +5,10 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQL_ALCHEMY_DATABASE_URI = "sqlite:///database.sqlite3"
+    SQLALCHEMY_DATABASE_URI = "sqlite:///database.sqlite3"
     SECRET_KEY = "thisisasecret"
     SECURITY_PASSWORD_SALT = "isasalt"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = False
     SECURITY_TOKEN_AUTHENTICATION_HEADER = "Authentication-Token"
+    SECURITY_TOKEN_MAX_AGE = 7200
