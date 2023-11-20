@@ -34,7 +34,6 @@ class Generate(Resource):
                 "id": temp.template_id
             }
         except sqlalchemy.exc.IntegrityError:
-            db.session.rollback()
             return {"status": "failed"}
         except Exception as e:
             return {"status": "failed"}
