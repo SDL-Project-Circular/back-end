@@ -1,84 +1,45 @@
-import datetime
-from flask_security import UserMixin, RoleMixin
-from sqlalchemy import Column, Boolean, Integer, String, ForeignKey, Date, DateTime, Time
+from flask_security import RoleMixin, UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Column, String, Integer, ForeignKey, Boolean
+from sqlalchemy.orm import relationship
 from dataclasses import dataclass
-from datetime import date
-from sqlalchemy.orm import relationship, backref
 
 db = SQLAlchemy()
 
 
 @dataclass
-class Content(db.Model):
-    template_id: int = Column(Integer, ForeignKey("template.template_id"), nullable=False)
-    content_id: int = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    from_address: str = Column(String, nullable=False)
-    to_address: str = Column(String, nullable=False)
-    subject: str = Column(String, nullable=False)
-    body: str = Column(String, nullable=False)
-    sign_off: str = Column(String, nullable=False)
-    copy_to: str = Column(String, nullable=False)
-    occurrence_date: bool = Column(Boolean, nullable=True, default=False, unique=False)
-    venue: bool = Column(Boolean, nullable=True, default=False, unique=False)
-    starting_time: bool = Column(Boolean, nullable=True, default=False, unique=False)
-    ending_time: bool = Column(Boolean, nullable=True, default=False, unique=False)
+class Product(db.Model):
+    category_id: int = Column(Integer, ForeignKey("category.category_id"), nullable=False)
+    product_id: int = Column(Integer, primary_key=True, autoincrement=True)
+    product_name: str = Column(String, nullable=False, unique=True)
+    product_unit: str = Column(String, nullable=False)
+    product_price: int = Column(Integer, nullable=False)
+    product_quantity: int = Column(Integer)
 
 
 @dataclass
-class Template(db.Model):
-    template_id: int = Column(Integer, primary_key=True, autoincrement=True)
-    template_name: str = Column(String, nullable=False)
-    date: date = Column(Date, default=datetime.date.today())
+class Category(db.Model):
+    __allow_unmapped__ = True
+    category_id: int = Column(Integer, primary_key=True, autoincrement=True)
+    category_name: str = Column(String, nullable=False, unique=True)
+    products: list[Product] = relationship("Product", backref="company")
 
 
 @dataclass
-class Circular(db.Model):
-    circular_id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
-    ref_no = Column(String, ForeignKey("announcement.ref_no"), nullable=False)
-    from_address = Column(String, nullable=False)
-    to_address = Column(String, nullable=False)
-    subject = Column(String, nullable=False)
-    body = Column(String, nullable=False)
-    sign_off = Column(String, nullable=False)
-    copy_to = Column(String, nullable=False)
-    date = Column(Date, nullable=False)
-    occurrence_date = Column(Date, nullable=True, default=None, unique=False)
-    venue = Column(String, nullable=True, default=None, unique=False)
-    starting_time = Column(Time, nullable=True, default=None, unique=False)
-    ending_time = Column(Time, nullable=True, default=None, unique=False)
-    def to_dict(self):
-        return {
-            "circular_id": self.circular_id,
-            "ref_no": self.ref_no,
-            "from_address": self.from_address,
-            "to_address": self.to_address,
-            "subject": self.subject,
-            "body": self.body,
-            "sign_off": self.sign_off,
-            "copy_to": self.copy_to,
-            "date": self.date.isoformat(),
-            "occurrence_date": self.occurrence_date.isoformat() if self.occurrence_date else None,
-            "venue": self.venue,
-            "starting_time": self.starting_time.strftime("%H:%M") if self.starting_time else None,
-            "ending_time": self.ending_time.strftime("%H:%M") if self.ending_time else None
-        }
-
-
-@dataclass
-class Announcement(db.Model):
-    ref_no: str = Column(String, primary_key=True, nullable=False)
-    circular_name: str = Column(String, nullable=False, unique=True)
-    date: date = Column(Date, default=datetime.date.today())
-    approved: bool = Column(Boolean, default=False, nullable=False)
-    status: str = Column(String, default="Pending", nullable=False)
+class Cart(db.Model):
+    __allow_unmapped__ = True
+    email: str = Column(String, ForeignKey("user.email"), nullable=False)
+    product_id: int = Column(Integer, ForeignKey("product.product_id"), nullable=False)
+    cart_id: int = Column(Integer, primary_key=True, autoincrement=True)
+    quantity: int = Column(Integer, nullable=False)
+    product: list[Product] = relationship('Product', backref='carts')
 
 
 @dataclass
 class RolesUsers(db.Model):
     __tablename__ = 'roles_users'
     id: int = db.Column(db.Integer(), primary_key=True)
-    user_id: int = db.Column('user_id', db.Integer(), db.ForeignKey('user.id'))
+    user_email: int = db.Column('user_email', db.Integer(), db.ForeignKey('user.email'))
     role_id: int = db.Column('role_id', db.Integer(), db.ForeignKey('role.id'))
 
 
@@ -88,17 +49,24 @@ class Role(db.Model, RoleMixin):
     name: str = db.Column(db.String(80), unique=True)
     description: str = db.Column(db.String(255))
 
+@dataclass
+class ManagerApproval(db.Model):
+    __allow_unmapped__ = True
+    id: int = Column(Integer, primary_key=True, autoincrement=True)
+    email: str = Column(String, ForeignKey("user.email"), nullable=False)
+    status: bool = Column(Boolean, default=False)
+
 
 @dataclass
 class User(db.Model, UserMixin):
     __allow_unmapped__ = True
-    id: int = db.Column(db.Integer, primary_key=True)
-    username: str = db.Column(db.String, unique=False)
-    email: str = db.Column(db.String(255), unique=True, index=True)
+    username: str = db.Column(db.String(255), nullable=False)
+    email: str = db.Column(db.String(255), primary_key=True, index=True)
     password: str = db.Column(db.String(255))
     active: bool = db.Column(db.Boolean())
     fs_uniquifier: str = db.Column(db.String(255), unique=True, nullable=False)
     roles: list[Role] = db.relationship('Role', secondary='roles_users',
-                            backref=db.backref('users', lazy='dynamic'))
-    # study_resource = db.relationship('StudyResource', backref='creator')
+                                        backref=db.backref('users', lazy='dynamic'))
+    items: list[Cart] = relationship("Cart")
+    approved: list[ManagerApproval] = relationship("ManagerApproval")
 

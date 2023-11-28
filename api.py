@@ -1,193 +1,152 @@
-from datetime import datetime as dt
-import json
-import sqlalchemy.exc
-from flask import request, jsonify
-from flask_login import login_required
-from flask_restful import Resource
-from flask_security import auth_required, roles_accepted
+import sqlalchemy
+from flask_security import roles_accepted, auth_required
+
 from model import *
+from flask_restful import Resource
+from flask import jsonify, request
 
 
-class Generate(Resource):
+class Categories(Resource):
     @auth_required("token")
-    @roles_accepted("admin")
+    def get(self, cate_id=None):
+        if cate_id is not None:
+            items = Category.query.filter_by(category_id=cate_id).first()
+            return jsonify(items)
+        else:
+            items = db.session.query(Category).all()
+            return jsonify(items)
+
+    @auth_required("token")
     def post(self):
-        data = request.form.to_dict() or request.json
-        temp = Template(template_name=data['template_name'])
+        category = request.json['name']
+        print(category)
         try:
-            db.session.add(temp)
+            obj = Category(category_name=category)
+            db.session.add(obj)
             db.session.commit()
+            return jsonify({"status": "success"})
+        # except sqlalchemy.exc.IntegrityError:
+        #     return jsonify({"error": "Category already exists !"})
         except Exception as e:
-            return {"status": "failed"}
+            print(e)
+
+    @auth_required("token")
+    def delete(self, cate_id):
         try:
-            data_object = Content(template_id=int(temp.template_id), from_address=data['from'],
-                                  to_address=data['to'], subject=data['subject'], body=data['body'],
-                                  sign_off=data['sign_off'], copy_to=data['copy_to'],
-                                  occurrence_date=data['selectedOptions']['occurrence_date'],
-                                  venue=data['selectedOptions']['venue'],
-                                  starting_time=data['selectedOptions']['starting_time'],
-                                  ending_time=data['selectedOptions']['ending_time'])
-            db.session.add(data_object)
+            obj = Product.query.filter_by(category_id=cate_id).first()
+            if obj:
+                db.session.delete(obj)
+                db.session.commit()
+            db.session.delete(Category.query.filter_by(category_id=cate_id).first())
             db.session.commit()
-            return {
-                "status": "success",
-                "id": temp.template_id
-            }
+            return jsonify({"status": "success"})
+        except Exception as e:
+            print(e)
+            return jsonify({"status": "failed"})
+
+    @auth_required("token")
+    def patch(self, cate_id):
+        new_cat = request.args.get("new_cat")
+        print(cate_id, new_cat)
+        try:
+            cat = db.session.query(Category).filter_by(category_id=cate_id).first()
+            cat.category_name = new_cat
+            db.session.add(cat)
+            db.session.commit()
+            return jsonify({"status": "success"})
+        except Exception as e:
+            print(e)
+            return jsonify({"status": "failed"})
+
+
+class Cart_items(Resource):
+    @auth_required("token")
+    def get(self, username):
+        if username:
+            cart_items = User.query.filter_by(email=username).first().items
+            return jsonify(cart_items)
+        return jsonify({"status": "failure"})
+
+    @auth_required("token")
+    def post(self, username):
+        prod_id = request.json["prod_id"]
+        quantity = int(request.json["quantity"])
+        try:
+            obj = Cart(email=username, product_id=int(prod_id), quantity=quantity)
+            db.session.add(obj)
+            db.session.commit()
+            return jsonify({"status": "success"})
+        except:
+            return jsonify({"status": "failed"})
+
+    @auth_required("token")
+    def delete(self, username):
+        prod_id = request.args.get("prod_id")
+        try:
+            Cart.query.filter_by(product_id=prod_id, email=username).delete()
+            db.session.commit()
+            return jsonify({"status": "success"})
+        except:
+            return jsonify({"status": "failed"})
+
+    @auth_required("token")
+    def patch(self, username):
+        try:
+            cart = Cart.query.filter_by(email=username).all()
+            for i in cart:
+                prod = Product.query.filter_by(product_id=i.product_id).first()
+                prod.product_quantity -= i.quantity
+                db.session.add(prod)
+                db.session.commit()
+                db.session.delete(i)
+                db.session.commit()
+            return jsonify({"status": "failure"})
+        except Exception as e:
+            print(e)
+            return jsonify({"status": "success"})
+
+
+class Products(Resource):
+    @auth_required("token")
+    def post(self, cate_id):
+        try:
+            print(cate_id)
+            if not cate_id:
+                return jsonify({"status": "failed"})
+            data = request.json
+            obj = Product(category_id=cate_id, product_name=data['name'], product_unit=data['unit'],
+                          product_price=int(data['price']),
+                          product_quantity=int(data['quantity']))
+            db.session.add(obj)
+            db.session.commit()
+            return jsonify({"status": "success"})
         except sqlalchemy.exc.IntegrityError:
-            return {"status": "failed"}
-        except Exception as e:
-            return {"status": "failed"}
+            return jsonify({"error": "Product already exists !"})
 
     @auth_required("token")
-    @roles_accepted("admin")
-    def get(self):
-        try:
-            template_id = request.args.get('id')
-            if template_id:
-                data = Content.query.filter_by(template_id=template_id).first()
-            else:
-                data = Content.query.all()
-            if data:
-                return jsonify(data)
-            else:
-                return {"status": "no"}
-        except Exception as e:
-            return {"status": "failed"}, 500
-
-    @auth_required("token")
-    @roles_accepted("admin")
     def delete(self):
         try:
-            template_id = request.args.get('id')
-            if template_id:
-                data = Content.query.filter_by(template_id=template_id).first()
-                content = Template.query.filter_by(template_id=template_id).first()
-                db.session.delete(content)
-                db.session.commit()
-                db.session.delete(data)
-                db.session.commit()
-                return {"status": "success"}
-        except Exception as e:
-            return {"status": "failed"}
-
-
-class Templates(Resource):
-    @auth_required("token")
-    @roles_accepted("admin")
-    def get(self):
-        data = Template.query.all()
-        if data:
-            return jsonify(data)
-        else:
-            return {"status": "no"}
-
-
-class Circulars(Resource):
-    @auth_required("token")
-    @roles_accepted("admin", "HOD")
-    def get(self):
-        ref_no = request.args.get("id")
-        if ref_no:
-            data = Circular.query.filter_by(ref_no=ref_no).first()
-            circular_dict = data.to_dict()
-            if data:
-                return jsonify(circular_dict)
-            else:
-                return {"status": "no"}
-        data = Announcement.query.all()
-        if data:
-            return jsonify(data)
-        else:
-            return {"status": "no"}
-
-    @auth_required("token")
-    @roles_accepted("admin")
-    def post(self):
-        data = request.form.to_dict() or request.json
-        date_format = "%Y-%m-%d"
-        time_format = "%H:%M"
-        try:
-            announcement = Announcement(ref_no=data['ref_no'], circular_name=data['circular_name'])
-            db.session.add(announcement)
-            data_object = Circular(ref_no=data['ref_no'], from_address=data['from_address'],
-                                   to_address=data['to_address'],
-                                   subject=data['subject'], body=data['body'],
-                                   date=dt.strptime(data['date'], date_format),
-                                   sign_off=data['sign_off'], copy_to=data['copy_to'],
-                                   occurrence_date=dt.strptime(data['occurrence_date'], date_format).date() if data[
-                                       'occurrence_date'] else None,
-                                   venue=data['venue'],
-                                   starting_time=dt.strptime(data['starting_time'], time_format).time() if data[
-                                       'starting_time'] else None,
-                                   ending_time=dt.strptime(data['ending_time'], time_format).time() if data[
-                                       'ending_time'] else None)
-            db.session.add(data_object)
+            product = request.args.get("product_id")
+            obj = Product.query.filter_by(product_id=product).first()
+            db.session.delete(obj)
             db.session.commit()
-            return {
-                "status": "success",
-                "circular_id": data['ref_no']
-            }
-        except Exception as e:
-            return {"status": "Failure"}
+        except:
+            return jsonify({"status": "failed"})
+        return jsonify({"status": "success"})
 
     @auth_required("token")
-    @roles_accepted("admin", "HOD")
-    def delete(self):
+    def put(self):
+        prod_id = request.args.get("product_id")
+        new_unit = request.json["unit"]
+        new_price = request.json["price"]
+        new_quantity = request.json["quantity"]
         try:
-            ref_no = request.args.get('ref_no')
-            if ref_no:
-                data = Circular.query.filter_by(ref_no=ref_no).first()
-                content = Announcement.query.filter_by(ref_no=ref_no).first()
-                db.session.delete(data)
-                db.session.commit()
-                db.session.delete(content)
-                db.session.commit()
-                return {"status": "success"}
-        except Exception as e:
-            return {"status": "failed"}
-
-    @auth_required("token")
-    @roles_accepted("admin")
-    def patch(self):
-        try:
-            ref_no = request.args.get("ref_no")
-            id = request.args.get("id")
-            if ref_no:
-                data = request.form.to_dict() or request.json
-                content = Announcement.query.filter_by(ref_no=ref_no).first()
-                content.circular_name = data["circular_name"]
-                circular_data = Circular.query.filter_by(ref_no=ref_no).first()
-                circular_data.venue = data["venue"]
-                circular_data.occurence_date = data["occurrence_date"]
-                circular_data.ending_time = data["ending_time"]
-                circular_data.starting_time = data["starting_time"]
-                content.status = "Pending"
-                db.session.add(circular_data)
-            elif id:
-                content = Announcement.query.filter_by(ref_no=id).first()
-                content.approved = True
-            db.session.add(content)
+            prod = db.session.query(Product).filter_by(product_id=prod_id).first()
+            prod.product_price = new_price
+            prod.product_quantity = new_quantity
+            prod.product_unit = new_unit
+            db.session.add(prod)
             db.session.commit()
-            return {
-                "status": "success",
-                "circular_id": ref_no
-            }
-
-        except Exception as e:
-            return {"status": "failed"}
-
-
-class HOD(Resource):
-    @auth_required("token")
-    @roles_accepted("HOD")
-    def patch(self):
-        ref_no = request.args.get('ref_no')
-        id = request.args.get('id')
-        if ref_no:
-            data = Announcement.query.filter_by(ref_no=ref_no).first()
-            data.status = "Rejected"
-        else:
-            data = Announcement.query.filter_by(ref_no=id).first()
-            data.status = "Accepted"
-        db.session.add(data)
-        db.session.commit()
+            return jsonify({"status": "success"})
+        except:
+            return jsonify({"status": "failed"})
